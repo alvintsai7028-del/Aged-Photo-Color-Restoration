@@ -1,4 +1,4 @@
-# Real-Time Color Cast Restoration Engine via Residual SE-U-Net in CIELab Space
+# Automatic Color Cast Restoration for Aged Photographs via Residual SE-U-Net in CIELab Space
 
 Old photographs frequently experience significant color shifts, such as pronounced yellow or red tints, as a result of temporal degradation and improper storage. While traditional digital photo restoration methods heavily depend on manual, labor-intensive editing in software like Adobe Photoshop, existing deep learning research predominantly targets the colorization of black-and-white images rather than correcting color casts in already colored photographs. To address this technical gap, this project introduces an end-to-end deep learning framework designed to automatically correct color degradation and restore authentic color balance to vintage images.
 
@@ -41,19 +41,8 @@ To overcome this, the final pipeline deploys a 5-layer **Residual U-Net** struct
 * **SE Attention Blocks:** Re-calibrate channel-wise feature responses by explicitly modeling interdependencies between channels, thereby restricting forward feature propagation to what is strictly essential for local chromatic restoration.
 * **Decoupled Processing:** The pipeline completely bypasses physical degradation tracking (omitting the legacy Pik-fix Restoration Net entirely) to dedicate 100% of network capacity toward the Core Colorization module.
 
-```mermaid
-graph TD
-    A[Input Image RGB] -->|rgb_to_lab| B[Input Tensor Lab]
-    B --> C[Residual U-Net Encoder Layers 1-5]
-    C -->|Feature Calibration via SE Blocks| D[Latent Feature Bottleneck]
-    D --> E[U-Net Decoder with Skip-Connection Interpolation]
-    E -->|OutConv Layer| F[Predicted Output Tensor Lab]
-    F -->|L1 / SSIM / Histogram Loss| G[Multi-Objective Loss Engine]
-    F -->|Batch Lab-to-RGB Projection| H[Predicted Output RGB]
-    H -->|VGG-16 Deep Feature Extraction| I[VGG Perceptual Loss]
-    I --> G
-    G -->|Gradient Backpropagation| J[Adam Optimizer Adjustments]
-```
+![Model Architecture](./model_architecture.png)
+
 ### B. Joint Composite Loss Formulation
 
 To ensure strict pixel-level alignment while concurrently matching the complex global color distribution of pristine target images, the network is driven by a custom, differentiable joint multi-loss objective function. Backpropagation gradients are calculated across four weighted sub-metrics to balance structural preservation against chromatic restoration accuracy:
@@ -142,21 +131,20 @@ To address dataset variance, the training pairs were transitionally swapped to a
 
 ## 5. Qualitative Results Gallery
 
-To complement our quantitative benchmarks, the following comparison showcase demonstrates the progressive visual improvements achieved across the different operational pipeline modes. By isolating a single historical scene, we can observe how the network gradually resolves severe temporal degradation without losing structural integrity or introducing artificial color distortions.
+To demonstrate the qualitative performance of our framework, the image gallery below showcases the progressive color cast restoration across multiple degraded historical scenarios. This visual matrix functions as a direct validation of our final architecture against both intermediate variants and the deterministic algorithmic ground truth.
 
-| Mode 0: Raw Input Profile | Mode 1: Intermediate RGB Pipeline | Mode 2: Final Dual-Stage Optimization |
-| :---: | :---: | :---: |
-| ![Mode 0 Raw](./frame_000260.jpg) | ![Mode 1 RGB Fix](./frame_000280.jpg) | ![Mode 2 Full Optimization](./frame_000430.jpg) |
-| **Aged Baseline Stream** | **RGB Multi-Channel Balance** | **Complete Residual SE-U-Net Framework** |
-| Captures severe uniform color casting, resulting in muted tissue structures, heavily distorted skin tones, and lost subsurface contrast. | Rebalances localized color channels independently. While high-frequency spatial boundaries become sharp, the image suffers from overall luminance noise. | Executes a pre-processing CLAHE pass over the HSV V-channel before launching multi-channel loops. Restores vibrant, natural tones with peak edge preservation and zero artifacts. |
+![Restoration Comparison](./restoration_results.png)
+
+> *Figure: Comparative analysis of automated color cast correction across three historical family profiles, benchmarking the original input, algorithmic ground truth, baseline ablation variants (Implementation 5), and our finalized model (Implementation 6).*
 
 ---
 
-## Key Visual Assessments
+## Key Visual Assessments & Column-Wise Breakdown
 
-* **CAP_PROP-Bounded Chromatic Alignment:** As demonstrated in the **Mode 2** transition, pre-filtering luminance completely eliminates the hazardous red/yellow shifts while maintaining organic contrast profiles.
-* **Capillary-Grade Edge Reinforcement:** Thanks to the **Residual SE-U-Net** bottleneck constraints, localized structural boundaries (such as teeth line definitions and sub-surface gradients) remain distinct and completely unmarred by the standard blurriness associated with traditional CNN upsampling models.
-* **Noise Floor Suppression:** The soft-histogram EMD calculation effectively neutralizes systemic camera sensor noise floors. This provides a velvety, crisp grain preservation that is highly valued in clinical and archiving environments.
+* **Input (Aged Profile):** Captures the severe, non-uniform temporal degradation characteristic of vintage prints. The images suffer from severe organic yellowing and red tint shifts, which compress structural contrast and heavily distort natural features like skin tones and ambient outdoor backgrounds.
+* **gt (Ground Truth):** Deterministic, clean algorithmic restoration matrices generated uniformly via `PhotoGlory` software to serve as stable, noise-free target distributions.
+* **impl5 wo ref vs. impl5 w ref (Ablation Variants):** Demonstrates the intermediate stage where a baseline U-Net operates in the CIELab space. While uniform color casting is significantly suppressed compared to the raw inputs, these models occasionally struggle with minor local color bleeding or under-restoration depending on whether global white-balance reference guidance is active.
+* **impl6 (Our Final Engine):** Powered by the complete **Residual SE-U-Net architecture**. By utilizing Squeeze-and-Excitation channel calibration, the final engine eliminates residual chromatic bleeding entirely. It successfully recovers vibrant, authentic skin tones, achieves perfect contrast balance, and enforces crisp edge preservation around complex high-frequency patterns (such as plaid shirt textures and facial definitions) without inducing pixel-wise oversmoothing.
 
 ## 6. Repository Structure & Execution Guide
 
@@ -173,15 +161,12 @@ Before launching the automation scripts, ensure your local workspace matches the
 │   ├── val_input_256/                    # Faded validation images
 │   └── val_gt_256/                       # Validation ground truth targets
 │
-└── Aged-Photo-Color-Restoration-Engine/  # Core Repository (Root Folder)
+└── Aged-Photo-Color-Restoration/  # Core Repository (Root Folder)
     ├── train.py                          # Integrated pipeline for Residual SE-U-Net training
     ├── test.py                           # Independent batch inference and saving execution
     ├── train.sh                          # Linux shell automation wrapper for model training
     ├── test.sh                           # Linux shell automation wrapper for evaluation
     ├── requirements.txt                  # Environment dependency specifications
-    ├── frame_000260.jpg                  # Mode 0 Sample Asset
-    ├── frame_000280.jpg                  # Mode 1 Sample Asset
-    ├── frame_000430.jpg                  # Mode 2 Sample Asset
     └── README.md                         # Technical engine portfolio documentation
 ```
 ### B. Setup & Installation
@@ -192,12 +177,6 @@ This platform requires a Python 3.8+ environment along with a CUDA-enabled PyTor
 ```bash
 pip install -r requirements.txt
 ```
-#### 2. Verification of Dependencies
-The file `requirements.txt` installs the core packages required to compute our multi-objective loss equations and color-space matrices:
-* **`torch` & `torchvision`:** Powers the primary tensor operations, deep convolutional network layers, and VGG perceptual feature extraction graphs.
-* **`opencv-python`:** Handles high-performance matrix manipulations and native RGB/CIELab color space transformations.
-* **`numpy`:** Manages efficient multidimensional array processing and numerical computations within the data loading pipeline.
-* **`scikit-image`:** Computes quantitative Peak Signal-to-Noise Ratio (**PSNR**) evaluation states during the validation tracking loop.
 
 ### C. Pipeline Execution
 
