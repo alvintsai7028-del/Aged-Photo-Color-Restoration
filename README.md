@@ -68,7 +68,7 @@ The project evaluated multiple architectures throughout development using PSNR, 
 | **Implementation 6 (Final)** | **CIELab Space ($L, a, b$)** | **Residual SE-U-Net Topology** | **27.33** | **0.946** | **0.120** |
 ---
 The final Residual SE-U-Net achieved the best overall performance across all evaluation metrics.
-![Model Architecture](./model_architecture.png)
+![Model Results](./restoration_results.png)
 
 
 
