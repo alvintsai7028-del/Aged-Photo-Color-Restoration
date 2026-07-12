@@ -21,12 +21,12 @@ A critical engineering bottleneck in real-world historical image restoration is 
 Rather than manually reverse-engineering complex Adobe Photoshop curve adjustments, lookup tables (LUTs), or rule-based color balancing algorithms, our architecture treats image restoration as an example-based mapping problem. 
 * **The Supervision Protocol:** For this implementation, the pipeline utilizes a selective golden dataset of 27 high-quality paired historical samples supervised by deterministic `PhotoGlory` algorithmic outputs to serve as a clean proof of concept. 
 * **The Mimicking Framework:** The system successfully validates that a deep convolution network can learn to capture and replicate highly intricate color cast transformations with exceptional fidelity from a minimal sample set. 
-* **Industrial Scalability:** This architecture provides immediate real-world utility for commercial archiving. If a professional photo restoration master manually retouches a minimal golden set of 20 to 30 images, this engine can encode that master's unique artistic sensibilities and color profile into the network weights. The trained model can then act as an automated deployment pipeline, mass-producing identical high-end restoration styles across thousands of archived assets with zero human latency.
+* **Industrial Scalability:** If a professional photo restoration master manually retouches a minimal golden set of 20 to 30 images, this engine can encode that master's unique artistic sensibilities and color profile into the network weights. The trained model can then act as an automated deployment pipeline, mass-producing identical high-end restoration styles across thousands of archived assets.
 
 ### B. Patch-Based Localized Augmentation Strategy
 Training highly parameter-dense deep neural networks on small datasets typically invites catastrophic overfitting. To secure robust training stability from the 27 baseline pairs, we implemented a **Patch-Based Cropping Strategy**:
-* **Dimension Manipulation:** The 27 high-resolution uncompressed photo pairs were spatially decomposed and center-cropped into 105 distinct, localized sub-tensors of $256 \times 256$ pixels.
-* **Algorithmic Justification:** By shifting the structural focus from macroscopic semantic images down to localized patches, the network is discouraged from memorizing large-scale semantic contexts (e.g., identifying specific faces or objects). Instead, it is forced to specialize in generalized pixel-wise chromatic variations, color distribution alignments, and localized frequency boundaries. This patch-based constraint maximizes data efficiency and ensures excellent generalization capabilities during inference on unseen, severely faded historical profiles.
+* **Dimension Manipulation:** The 27 high-resolution uncompressed photo pairs were spatially decomposed and center-cropped into  distinct, localized sub-tensors of $256 \times 256$ pixels.
+* **Algorithmic Justification:** By shifting the structural focus from macroscopic semantic images down to localized patches, the network is discouraged from memorizing large-scale semantic contexts (e.g., identifying specific faces or objects). Instead, it is forced to specialize in generalized pixel-wise chromatic variations, color distribution alignments, and localized frequency boundaries. This patch-based constraint ensures excellent generalization capabilities during inference on unseen historical photos.
 
 ---
 ## 3. System Architecture & Multi-Objective Loss Formulation
@@ -129,7 +129,7 @@ To address dataset variance, the training pairs were transitionally swapped to a
 * **Architectural Simplification (Impl 5 vs. Impl 6):** Standard Dense Block layers propagate an excessive volume of global features, inducing feature redundancy and severe overfitting on limited training patches. Replacing them with our streamlined **Residual SE-U-Net** topology successfully limited feature propagation to localized restoration cues, triggering an additional **+4.46 dB** PSNR surge and driving the perceptual error (LPIPS) down to a peak efficiency score of **0.12**.
 
 
-## 5. Qualitative Results Gallery
+## 5. Results
 
 To demonstrate the qualitative performance of our framework, the image gallery below showcases the progressive color cast restoration across multiple degraded historical scenarios. This visual matrix functions as a direct validation of our final architecture against both intermediate variants and the deterministic algorithmic ground truth.
 
@@ -141,10 +141,10 @@ To demonstrate the qualitative performance of our framework, the image gallery b
 
 ## Key Visual Assessments & Column-Wise Breakdown
 
-* **Input (Aged Profile):** Captures the severe, non-uniform temporal degradation characteristic of vintage prints. The images suffer from severe organic yellowing and red tint shifts, which compress structural contrast and heavily distort natural features like skin tones and ambient outdoor backgrounds.
+* **Input (Aged Profile):** Captures the severe, non-uniform temporal degradation characteristic of vintage prints. The images suffer from severe organic yellow or red shifts, which compress structural contrast and heavily distort natural features like skin tones and ambient outdoor backgrounds.
 * **gt (Ground Truth):** Deterministic, clean algorithmic restoration matrices generated uniformly via `PhotoGlory` software to serve as stable, noise-free target distributions.
-* **impl5 wo ref vs. impl5 w ref (Ablation Variants):** Demonstrates the intermediate stage where a baseline U-Net operates in the CIELab space. While uniform color casting is significantly suppressed compared to the raw inputs, these models occasionally struggle with minor local color bleeding or under-restoration depending on whether global white-balance reference guidance is active.
-* **impl6 (Our Final Engine):** Powered by the complete **Residual SE-U-Net architecture**. By utilizing Squeeze-and-Excitation channel calibration, the final engine eliminates residual chromatic bleeding entirely. It successfully recovers vibrant, authentic skin tones, achieves perfect contrast balance, and enforces crisp edge preservation around complex high-frequency patterns (such as plaid shirt textures and facial definitions) without inducing pixel-wise oversmoothing.
+* **impl5 wo ref vs. impl5 w ref (Ablation Variants):** Demonstrates the intermediate stage where a baseline U-Net operates in the CIELab space. While uniform color casting is significantly suppressed compared to the raw inputs, these models occasionally struggle with minor under-restoration depending on whether global white-balance reference guidance is active.
+* **impl6 (Our Final Engine):** Powered by the complete **Residual SE-U-Net architecture**. By utilizing Squeeze-and-Excitation channel calibration, the final engine successfully recovers vibrant, authentic skin tones, and achieves perfect contrast balance.
 
 ## 6. Repository Structure & Execution Guide
 
@@ -185,14 +185,10 @@ The framework wraps core Python execution commands within automated shell script
 ---
 
 #### 1. Launching the Training Pipeline
-To initialize data ingestion, execute the patch-based localized slicing, run the 60-epoch multi-objective joint optimization loop, and serialize the optimal weights into `unet5_yellow_fix_2.pth`, execute the training wrapper:
-
 ```bash
 bash train.sh
 ```
 #### 2. Running Automated Batch Inference
-To load the finalized model parameters, execute color cast corrections on unseen validation or testing image subsets, and export the reconstructed high-fidelity RGB files into the local `./log/` subdirectory, execute the inference wrapper:
-
 ```bash
 bash test.sh
 ```
