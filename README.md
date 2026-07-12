@@ -1,6 +1,6 @@
 # Automatic Color Cast Restoration for Aged Photographs
 ## Computational Photography Course Project | National Tsing Hua University (NTHU EE)
----
+
 ## Overview
 Old photographs often suffer from severe color degradation caused by aging, oxidation, and long-term storage, resulting in noticeable yellow or red color casts. While existing deep learning methods mainly focus on colorizing grayscale images, relatively little work addresses the restoration of degraded color photographs.
 
@@ -8,14 +8,14 @@ This course project presents an end-to-end deep learning framework for automatic
 
 The project was developed as the final project for a Computational Photography course at National Tsing Hua University.
 
----
+
 
 ## Motivation
 Traditional restoration of aged photographs typically requires extensive manual editing using software such as Adobe Photoshop. Besides being time-consuming, manually restoring thousands of historical images is impractical.
 
 This project explores whether a deep neural network can automatically learn color restoration patterns from a small collection of professionally restored image pairs and generalize them to unseen historical photographs.
 
----
+
 
 ## Key Features
 ### A. CIELab Color Space Restoration
@@ -51,7 +51,7 @@ This strategy:
 * **Reduces overfitting**
 * **Encourages learning of local color correction instead of memorizing image semantics.**
 
----
+
 
 ## Experimental Results
 The project evaluated multiple architectures throughout development using PSNR, SSIM, and LPIPS.
@@ -70,7 +70,7 @@ The project evaluated multiple architectures throughout development using PSNR, 
 The final Residual SE-U-Net achieved the best overall performance across all evaluation metrics.
 ![Model Architecture](./model_architecture.png)
 
----
+
 
 ## Development Insights
 Several important observations were obtained during experimentation:
@@ -79,7 +79,7 @@ Several important observations were obtained during experimentation:
 * **Stable supervision using consistent restoration targets greatly improved convergence.**
 * **Replacing Dense Blocks with Residual SE blocks reduced feature redundancy and improved generalization.**
 
----
+
 
 ## Project Structure
 
@@ -99,7 +99,7 @@ Several important observations were obtained during experimentation:
     └── README.md                         # Technical engine portfolio documentation
 ```
 
----
+
 
 ## Setup & Installation
 
@@ -119,22 +119,18 @@ bash train.sh
 bash test.sh
 ```
 
----
-
 ## Technologies
-*Python
-*PyTorch
-*CUDA
-*OpenCV
-*NumPy
-*CIELab Color Space
-*Residual U-Net
-*Squeeze-and-Excitation Network
-*Computational Photography
-*Image Restoration
-*Deep Learning
-
----
+***Python**
+***PyTorch**
+***CUDA**
+***OpenCV**
+***NumPy**
+***CIELab Color Space**
+***Residual U-Net**
+***Squeeze-and-Excitation Network**
+***Computational Photography**
+***Image Restoration**
+***Deep Learning**
 
 ## Future Work
 Potential directions for future improvement include:
@@ -142,8 +138,6 @@ Potential directions for future improvement include:
 * **Exploring transformer-based restoration architectures**
 * **Improving robustness under severe physical degradation**
 * **Incorporating diffusion-based restoration models**
-
----
 
 ## Acknowledgements
 This project was completed as the final project for the Computational Photography course in the Department of Electrical Engineering at National Tsing Hua University.
